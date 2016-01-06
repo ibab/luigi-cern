@@ -79,7 +79,9 @@ class XRootDTarget(FileSystemTarget):
         else:
             raise ValueError("Unsupported open mode '%s'" % mode)
 
-        f.open(self._url, flags)
+        resp, _ = f.open(self._url, flags)
+        if resp.error:
+            raise RuntimeError(str(resp))
 
         return f
 
