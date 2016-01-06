@@ -1,7 +1,7 @@
 import luigi
 import xrootd
 
-EOS_HOME = '/eos/lhcb/cern.ch/i/ibabusch'
+EOS_HOME = '/eos/lhcb/user/i/ibabusch'
 DEFAULT_SERVER = 'eoslhcb.cern.ch'
 
 class MakeNumbers(luigi.Task):
@@ -9,7 +9,7 @@ class MakeNumbers(luigi.Task):
     server = luigi.Parameter(default=DEFAULT_SERVER)
 
     def output(self):
-        return xrootd.XRootDTarget('root://' + self.server + '/' + self.outpath)
+        return xrootd.XRootDTarget('root://' + self.server + '//' + self.outpath)
 
     def require(self):
         return []
@@ -18,7 +18,9 @@ class MakeNumbers(luigi.Task):
         f = self.output().open('w')
 
         for i in range(1, 101):
-            f.write('{}\n'.format(i))
+            resp, _ = f.write('{}\n'.format(i))
+            if resp.error:
+                raise ValueError(str(resp))
 
         f.close()
 
@@ -27,7 +29,7 @@ class SumNumbers(luigi.Task):
     server = luigi.Parameter(default=DEFAULT_SERVER)
 
     def output(self):
-        return xrootd.XRootDTarget('root://' + self.server + '/' + self.outpath)
+        return xrootd.XRootDTarget('root://' + self.server + '//' + self.outpath)
 
     def requires(self):
         return MakeNumbers(EOS_HOME + '/numbers')
